@@ -1,0 +1,17 @@
+# depslib dependency file v1.0
+1418223904 source:/home/canda/workspace/SOCKS4/SOCKS4/main.c
+	<sys/types.h>
+	<sys/socket.h>
+	<sys/un.h>
+	<memory.h>
+	<assert.h>
+	<strings.h>
+	<netinet/in.h>
+	<arpa/inet.h>
+	<pthread.h>
+	<stdlib.h>
+	<unistd.h>
+	<stdio.h>
+	<string.h>
+	<sys/ioctl.h>
+
