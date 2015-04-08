@@ -22,9 +22,9 @@ unsigned int	hash	( hash_table *hsh_tbl, char* key );
 
 typedef node* iterator;
 
-iterator	begin	( hash_table *hsh_tbl, char* key );
+iterator	begin	( hash_table *hsh_tbl);
 iterator 	end	();
-iterator	next	( iterator i );
+iterator 	next	( hash_table *hsh_tbl, iterator i);
 int		get_data( iterator i );
 char*		get_key	( iterator i );
 #endif

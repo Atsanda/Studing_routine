@@ -163,13 +163,14 @@ unsigned int hash( hash_table *hsh_tbl, char* key)
 }
 
 //iterator implemention
-iterator begin( hash_table *hsh_tbl, char* key )
+iterator begin( hash_table *hsh_tbl )
 {
 	assert(hsh_tbl != NULL);
-	assert(key     != NULL);
-	unsigned int index = hash(hsh_tbl, key);
-	(hsh_tbl->tbl)[index]->ITR_FLAG = 1;
-	return (hsh_tbl->tbl)[index];
+	int j;
+	for( j = 0; (hsh_tbl->tbl)[j] == NULL && j < (hsh_tbl->size) - 1 ; j++){;}
+
+	(hsh_tbl->tbl)[j] -> ITR_FLAG = 1;
+	return (hsh_tbl->tbl)[j];
 }
 
 iterator end()
@@ -177,13 +178,33 @@ iterator end()
 	return NULL;
 }
 
-iterator next( iterator i )
+iterator next( hash_table *hsh_tbl, iterator i )
 {
 	assert(i != NULL);
+	
 	if( i->next != NULL )
+	{
 		(i->next)->ITR_FLAG = 1;
-	i->ITR_FLAG = 0;
-	return i->next;
+		i->ITR_FLAG = 0;
+		return i->next;
+	}
+	if( i->next == NULL && hash( hsh_tbl, get_key(i)) < (hsh_tbl->size)-1 )
+	{
+		int j;
+		for( j = hash( hsh_tbl, get_key(i)) + 1; (hsh_tbl->tbl)[j] == NULL && j < (hsh_tbl->size) - 1 ; j++){;}
+		if( j == (hsh_tbl->size) -1 )
+			return NULL;
+		if( ((hsh_tbl->tbl)[j]) -> next  != NULL )
+			((hsh_tbl->tbl)[j] -> next) -> ITR_FLAG = 1;
+		i->ITR_FLAG = 0;
+
+		return (hsh_tbl->tbl)[j];
+	}
+	else
+	{
+		i->ITR_FLAG = 0;
+		return NULL;
+	}
 }
 
 int get_data( iterator i )

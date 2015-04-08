@@ -9,16 +9,29 @@
 int main()
 {
 	hash_table* a = create(4);
-	TEST(" A table was created with size = 4", a->size == 4);
+	int j = 0;
+	TEST(" A table was created", a != NULL);
+	for( j; j < 4 || (a->tbl)[j]; j++){;}
+	TEST(" A table is emty, size = 4", j == 4);
 	
 	//testing add() function
 	TEST(" Usage of add() with wrong parameters, hash_table* = NULL", add(NULL, "Peter", 1) ==  -1);
 	TEST(" Usage of add() with wrong parameters, key  = NULL", add( a, NULL , 1) ==  -1);
+	
 	add( a, "Peter", 1);
-	TEST(" add() works correctly when table is empty", ((a->tbl)[hash(a,"Peter")])->data  == 1);
-	TEST(" element with already existing key can not be added",  add(a, "Peter", 2) == -1);
+	j = 0;
+	for( j; j < 4 && (a->tbl)[j] == NULL; j++){;}
+	int tmp  = j;
+	for( j=j+1; j<4 && (a->tbl)[j] == NULL; j++){;}
+	TEST(" add() works correctly when table is empty", tmp  == hash(a, "Peter") && j == 4 && ((a->tbl)[hash(a,"Peter")])->data  == 1);	
+	TEST(" element with already existing key can not be added",  add(a, "Peter", 2) == -1);	
+
 	add( a, "Grisha", 2);
-	TEST(" add() works correctly in case of collision", (((a->tbl)[hash(a,"Peter")])->next)->data  == 2);
+	j = 0;
+	for( j; j < 4 && (a->tbl)[j] == NULL; j++){;}
+	tmp  = j;
+	for( j=j+1; j<4 && (a->tbl)[j] == NULL; j++){;}
+	TEST(" add() works correctly in case of collision", tmp == hash(a,"Grisha") && (((a->tbl)[tmp])->next)->data  == 2 && j == 4);
 	
 	//testing find() function
 	TEST(" Usage of find() with wrong parameters, hash_table* = NULL", find(NULL, "Peter") ==  NULL);
@@ -29,30 +42,36 @@ int main()
 	//testing delete() function
 	TEST(" Usage of delete() with wrong parameters, hash_table* = NULL", delete(NULL, "Peter") ==  -1);
 	TEST(" Usage of delete() with wrong parameters, key = NULL", delete( a, NULL ) ==  -1);
-	add(a, "Artyomka", 3);
-	delete(a, "Artyomka");
 	delete(a, "Peter");
 	delete(a, "Grisha");
-	TEST(" delete() worls correctly with normal parameters", find(a, "Grisha") == NULL && find(a, "Peter") == NULL && find(a, "Artyomka") == NULL);
+	for( j=0 ; j < 4 || (a->tbl)[j]; j++){;}
+
+	TEST(" delete() worls correctly with normal parameters", find(a, "Grisha") == NULL && find(a, "Peter") == NULL && j == 4);
 	TEST(" delete() can not delete  non-existing elem", delete(a, "MRSMB") == -1);
 
 
 	//testing iterator 
 	add( a, "Peter", 1);
-	add( a, "Grisha", 2);	
+	add( a, "Grisha", 2);
+	add( a, "Artyom", 3); 	
 	int sum = 0;	
-
-	iterator i;
-	for( i = begin(a,"Grisha");i != end(); i=next(i) )
-		sum += get_data(i);
 	
-	TEST(" Iterator detours correctly", sum == 3);
+	iterator it = begin(a);
+	TEST(" Iterator.begin() works correctly", get_data(it) == 1 && !strcmp("Peter", get_key(it)) );
+	it = next(a, it);
+	iterator it2 = next(a, it);
+	TEST(" Iterator.next() works correctly", get_data(it) == 2 && !strcmp("Grisha", get_key(it)) && get_data(it2) == 3 && !strcmp("Artyom", get_key(it2))); 
+	iterator i;
+	for( i = begin(a);i != end(); i=next(a, i) )
+		sum += get_data(i);
 
-	i = begin(a, "Grisha");
+	TEST(" Iterator detours correctly", sum == 6);
+
+	i = begin(a);
 
 	TEST(" get_key works correctly", !strcmp(get_key(i),"Peter"));
 	TEST(" Impossible to delete when iterator points(case1)", delete(a, "Peter") == -1);
-	next(i);
+	next( a,i );
 	TEST(" Impossible to delete when iterator points(case2)", delete(a, "Grisha") == -1);
 	
 	destroy(a);
