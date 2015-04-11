@@ -1,0 +1,219 @@
+        -:    0:Source:implement.c
+        -:    0:Graph:implement.gcno
+        -:    0:Data:implement.gcda
+        -:    0:Runs:21
+        -:    0:Programs:12
+        -:    1:#include "hash_table.h"
+        -:    2:#include <stdlib.h>
+        -:    3:#include <assert.h>
+        -:    4:#include <string.h>
+        -:    5:#include <stdio.h>
+        -:    6:
+       42:    7:hash_table* create(int size)
+        -:    8:{
+       42:    9:	assert(size >= 0);
+       42:   10:	hash_table* new_tbl 	= calloc(1, sizeof(hash_table));
+       42:   11:	new_tbl->tbl 		= calloc(size, sizeof(node*));
+       42:   12:	new_tbl->size		= size;
+       42:   13:}
+        -:   14:
+       42:   15:void destroy(hash_table *hsh_tbl)
+        -:   16:{
+       42:   17:	assert(hsh_tbl != NULL);
+        -:   18:
+        -:   19:	int i;
+        -:   20:	node *tmp_nd;
+        -:   21:	node *tbe_del;
+        -:   22:
+     1281:   23:	for(i=0; i < hsh_tbl->size; i++)
+        -:   24:	{
+     1239:   25:		tmp_nd = (hsh_tbl->tbl)[i];
+        -:   26:
+     1239:   27:		if( tmp_nd == NULL )
+      749:   28:			continue;
+        -:   29:	
+     1055:   30:		while( tmp_nd->next != NULL)
+        -:   31:		{
+       75:   32:			tbe_del = tmp_nd;
+       75:   33:			tmp_nd 	= tmp_nd->next;
+       75:   34:			free(tbe_del->key);
+       75:   35:			free(tbe_del);
+        -:   36:		}
+      490:   37:		free(tmp_nd->key);
+      490:   38:		free(tmp_nd);
+        -:   39:	}
+       42:   40:	free(hsh_tbl->tbl);
+       42:   41:	free(hsh_tbl);
+       42:   42:}
+        -:   43:
+     1216:   44:int add( hash_table *hsh_tbl, char* key, int data )
+        -:   45:{
+     1216:   46:	if(key == NULL)
+       21:   47:        	return -1;
+     1195:   48:	if(hsh_tbl == NULL)
+       21:   49:		return -1;
+     1174:   50:	if(find( hsh_tbl, key))
+       21:   51:		return -1;
+        -:   52:	
+     1153:   53:	unsigned int index = hash(hsh_tbl, key);
+        -:   54:
+     1153:   55:	node *tmp_nd = (hsh_tbl->tbl)[index];
+        -:   56:
+     1153:   57:	if( tmp_nd == NULL )
+        -:   58:	{
+      595:   59:		(hsh_tbl->tbl)[index] = calloc( 1, sizeof(node));
+      595:   60:		tmp_nd = (hsh_tbl->tbl)[index];
+      595:   61:		tmp_nd->data = data;
+      595:   62:		tmp_nd->key  = calloc(1,strlen(key)+1);
+      595:   63:	        strcpy(tmp_nd->key, key);
+      595:   64:		return 0;
+        -:   65:	}
+        -:   66:
+     2313:   67:	while( tmp_nd->next !=  NULL )
+     1197:   68:		tmp_nd = tmp_nd->next;
+        -:   69:
+      558:   70:	tmp_nd->next = calloc(1, sizeof(node));
+      558:   71:	tmp_nd	     = tmp_nd->next;
+      558:   72:	tmp_nd->data = data;
+      558:   73:	tmp_nd->key  = calloc(1,strlen(key)+1);
+      558:   74:	strcpy(tmp_nd->key, key);
+        -:   75:
+      558:   76:	return 0;
+        -:   77:}
+        -:   78:
+     1321:   79:int* find(hash_table *hsh_tbl, char* key)
+        -:   80:{
+     1321:   81:	if( key == NULL )
+       21:   82:	        return NULL;
+     1300:   83:	if( hsh_tbl == NULL )
+       21:   84:		return NULL;
+        -:   85:
+     1279:   86:	unsigned int index = hash(hsh_tbl, key);
+        -:   87:
+     1279:   88:	node *tmp_nd = (hsh_tbl->tbl)[index];
+        -:   89:
+     1279:   90:	if( tmp_nd == NULL)
+      637:   91:		return NULL;	
+        -:   92:
+     2460:   93:	for(tmp_nd; tmp_nd != NULL; tmp_nd = tmp_nd-> next)
+        -:   94:	{
+     1881:   95:		if( !strcmp(tmp_nd->key, key) )
+       63:   96:			return &(tmp_nd->data);
+        -:   97:	}
+        -:   98:
+      579:   99:	return NULL;
+        -:  100:}
+        -:  101:
+      714:  102:int  delete(hash_table *hsh_tbl, char* key)
+        -:  103:{
+      714:  104:	if( key == NULL )
+       21:  105:	        return -1;
+      693:  106:	if( hsh_tbl == NULL )
+       21:  107:		return -1;
+        -:  108:
+      672:  109:	unsigned int index = hash(hsh_tbl, key);
+        -:  110:
+      672:  111:	node *tmp_nd = (hsh_tbl->tbl)[index];
+      672:  112:	node *tbe_del = NULL;
+        -:  113:	
+      672:  114:	if( tmp_nd == NULL )
+       21:  115:		return -1;
+        -:  116:
+      651:  117:	if( !strcmp(tmp_nd->key , key) ) 
+        -:  118:	{
+      147:  119:		if( tmp_nd->ITR_FLAG )
+       21:  120:			return -1;
+        -:  121:
+      126:  122:		(hsh_tbl->tbl)[index] = tmp_nd->next;
+      126:  123:		free(tmp_nd->key);
+      126:  124:		free(tmp_nd);
+      126:  125:		return 0;
+        -:  126:	}
+        -:  127:	
+     2331:  128:	while( tmp_nd->next != NULL )
+        -:  129:	{
+     1806:  130:		if( !strcmp((tmp_nd->next)->key , key) )
+        -:  131:		{
+      483:  132:			tbe_del 	= tmp_nd->next;
+      483:  133:			if( tbe_del->ITR_FLAG )
+       21:  134:				return -1;
+      462:  135:			tmp_nd->next= (tmp_nd->next)->next;
+      462:  136:			free(tbe_del->key);
+      462:  137:			free(tbe_del);
+      462:  138:			return 0;
+        -:  139:		}
+     1323:  140:		tmp_nd = tmp_nd->next;
+        -:  141:	}
+       21:  142:	return -1;
+        -:  143:}
+        -:  144:
+     3657:  145:unsigned int hash( hash_table *hsh_tbl, char* key)
+        -:  146:{
+     3657:  147:	assert(hsh_tbl != NULL);
+     3657:  148: 	assert(key     != NULL);
+        -:  149:
+     3657:  150:	unsigned int hash = 0;
+        -:  151:
+    12903:  152:    	for(; *key; key++)
+        -:  153:    	{
+     9246:  154:        	hash += (unsigned char)(*key);
+     9246:  155:        	hash += (hash << 10);
+     9246:  156:        	hash ^= (hash >> 6);
+        -:  157:    	}
+     3657:  158:    	hash += (hash << 3);
+     3657:  159:    	hash ^= (hash >> 11);
+     3657:  160:    	hash += (hash << 15);
+        -:  161:
+     3657:  162:    	return hash%(hsh_tbl->size);
+        -:  163:}
+        -:  164:
+        -:  165://iterator implemention
+       84:  166:iterator begin( hash_table *hsh_tbl )
+        -:  167:{
+       84:  168:	assert(hsh_tbl != NULL);
+        -:  169:	int j;
+       84:  170:	for( j = 0; (hsh_tbl->tbl)[j] == NULL && j < (hsh_tbl->size) - 1 ; j++){;}
+        -:  171:
+       84:  172:	(hsh_tbl->tbl)[j] -> ITR_FLAG = 1;
+       84:  173:	return (hsh_tbl->tbl)[j];
+        -:  174:}
+        -:  175:
+      621:  176:iterator end()
+        -:  177:{
+      621:  178:	return NULL;
+        -:  179:}
+        -:  180:
+      670:  181:iterator next( hash_table *hsh_tbl, iterator i )
+        -:  182:{
+      670:  183:	assert(i != NULL);
+        -:  184:	
+      670:  185:	if( i->next != NULL )
+        -:  186:	{
+      180:  187:		(i->next)->ITR_FLAG = 1;
+      180:  188:		i->ITR_FLAG = 0;
+      180:  189:		return i->next;
+        -:  190:	}
+        -:  191:	//if( i->next == NULL)
+        -:  192:	int j;	
+      490:  193:	for( j = hash( hsh_tbl, get_key(i)) + 1; (hsh_tbl->tbl)[j] == NULL && j < (hsh_tbl->size) - 1 ; j++){;}
+      490:  194:	if( j == (hsh_tbl->size) -1 )
+       42:  195:		return NULL;
+        -:  196:
+      448:  197:	i->ITR_FLAG = 0;
+        -:  198:
+      448:  199:	i = (hsh_tbl->tbl)[j];
+      448:  200:	i -> ITR_FLAG = 1;
+      448:  201:	return i;	
+        -:  202:}
+        -:  203:
+      138:  204:int get_data( iterator i )
+        -:  205:{
+      138:  206:	assert(i != NULL);
+      138:  207:	return i->data;
+        -:  208:}
+        -:  209:
+     1111:  210:char* get_key( iterator i )
+        -:  211:{
+     1111:  212:	assert(i != NULL);
+     1111:  213:	return i->key;
+        -:  214:}

@@ -11,7 +11,7 @@ int main()
 	hash_table* a = create(4);
 	int j = 0;
 	TEST(" A table was created", a != NULL);
-	for( j; j < 4 || (a->tbl)[j]; j++){;}
+	for( j; j < 4 && (a->tbl)[j] == NULL; j++){;}
 	TEST(" A table is emty, size = 4", j == 4);
 	
 	//testing add() function
@@ -42,13 +42,21 @@ int main()
 	//testing delete() function
 	TEST(" Usage of delete() with wrong parameters, hash_table* = NULL", delete(NULL, "Peter") ==  -1);
 	TEST(" Usage of delete() with wrong parameters, key = NULL", delete( a, NULL ) ==  -1);
-	delete(a, "Peter");
+	delete(a, "Peter1");
 	delete(a, "Grisha");
-	for( j=0 ; j < 4 || (a->tbl)[j]; j++){;}
+	for( j=0 ; j < 4 && (a->tbl)[j] == NULL; j++){;}
 
 	TEST(" delete() worls correctly with normal parameters", find(a, "Grisha") == NULL && find(a, "Peter") == NULL && j == 4);
 	TEST(" delete() can not delete  non-existing elem", delete(a, "MRSMB") == -1);
+	
+	char ch = 'a';
+	for(ch; ch < 'z'; ch++)
+		add( a, &ch, ch);
+	for(ch = ch; ch >= 'a'; ch--)
+		delete( a, &ch);
+	for( j=0 ; j < 4 && (a->tbl)[j] == NULL; j++){;}
 
+	TEST(" test with delete and add", j == 4);
 
 	//testing iterator 
 	add( a, "Peter", 1);
@@ -59,11 +67,12 @@ int main()
 	iterator it = begin(a);
 	TEST(" Iterator.begin() works correctly", get_data(it) == 1 && !strcmp("Peter", get_key(it)) );
 	it = next(a, it);
-	iterator it2 = next(a, it);
+	iterator it2 = next(a, it);	
 	TEST(" Iterator.next() works correctly", get_data(it) == 2 && !strcmp("Grisha", get_key(it)) && get_data(it2) == 3 && !strcmp("Artyom", get_key(it2))); 
 	iterator i;
-	for( i = begin(a);i != end(); i=next(a, i) )
+	for( i = begin(a);i != end(); i = next(a, i) ){
 		sum += get_data(i);
+	}
 
 	TEST(" Iterator detours correctly", sum == 6);
 
@@ -71,10 +80,24 @@ int main()
 
 	TEST(" get_key works correctly", !strcmp(get_key(i),"Peter"));
 	TEST(" Impossible to delete when iterator points(case1)", delete(a, "Peter") == -1);
-	next( a,i );
+	i = next( a,i );
 	TEST(" Impossible to delete when iterator points(case2)", delete(a, "Grisha") == -1);
+	i = next( a, i);
+	TEST(" Possible to delete when iterator does not point", delete( a, "Grisha") != -1  && find(a, "Grisha") == NULL);
+
+	hash_table* b = create(55);
+	for(ch = 'C'; ch < 'Z'; ch++)
+		add( b, &ch, ch-'C'+1);
+
+	iterator k = begin(b);
+	ch = 'C';
+	for( k, ch; ch < 'Z' && k != end() ; ch++, k = next(b, k))
+		sum += get_data(k);
+	
+	TEST(" Iterator works correcly", sum == 282);
 	
 	destroy(a);
+	destroy(b);
 	
 	return 0;
 }

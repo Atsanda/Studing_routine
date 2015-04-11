@@ -59,7 +59,7 @@ int add( hash_table *hsh_tbl, char* key, int data )
 		(hsh_tbl->tbl)[index] = calloc( 1, sizeof(node));
 		tmp_nd = (hsh_tbl->tbl)[index];
 		tmp_nd->data = data;
-		tmp_nd->key  = calloc(1,strlen(key));
+		tmp_nd->key  = calloc(1,strlen(key)+1);
 	        strcpy(tmp_nd->key, key);
 		return 0;
 	}
@@ -70,7 +70,7 @@ int add( hash_table *hsh_tbl, char* key, int data )
 	tmp_nd->next = calloc(1, sizeof(node));
 	tmp_nd	     = tmp_nd->next;
 	tmp_nd->data = data;
-	tmp_nd->key  = calloc(1,strlen(key));
+	tmp_nd->key  = calloc(1,strlen(key)+1);
 	strcpy(tmp_nd->key, key);
 
 	return 0;
@@ -188,23 +188,17 @@ iterator next( hash_table *hsh_tbl, iterator i )
 		i->ITR_FLAG = 0;
 		return i->next;
 	}
-	if( i->next == NULL && hash( hsh_tbl, get_key(i)) < (hsh_tbl->size)-1 )
-	{
-		int j;
-		for( j = hash( hsh_tbl, get_key(i)) + 1; (hsh_tbl->tbl)[j] == NULL && j < (hsh_tbl->size) - 1 ; j++){;}
-		if( j == (hsh_tbl->size) -1 )
-			return NULL;
-		if( ((hsh_tbl->tbl)[j]) -> next  != NULL )
-			((hsh_tbl->tbl)[j] -> next) -> ITR_FLAG = 1;
-		i->ITR_FLAG = 0;
-
-		return (hsh_tbl->tbl)[j];
-	}
-	else
-	{
-		i->ITR_FLAG = 0;
+	//if( i->next == NULL)
+	int j;	
+	for( j = hash( hsh_tbl, get_key(i)) + 1; (hsh_tbl->tbl)[j] == NULL && j < (hsh_tbl->size) - 1 ; j++){;}
+	if( j == (hsh_tbl->size) -1 )
 		return NULL;
-	}
+
+	i->ITR_FLAG = 0;
+
+	i = (hsh_tbl->tbl)[j];
+	i -> ITR_FLAG = 1;
+	return i;	
 }
 
 int get_data( iterator i )
